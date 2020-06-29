@@ -11,6 +11,7 @@ import {
   Name,
 } from './sub-schemas';
 import { dateAtPlugin, isDeletedPlugin } from 'src/mongoose/plugins';
+import { Document } from 'mongoose';
 
 export const userCollation: CollationOptions = { locale: 'en_US', strength: 2 };
 
@@ -58,6 +59,8 @@ export class User implements DateAtPlugin, IsDeletedPlugin {
 
   isDeleted: boolean;
 }
+
+export type UserDoc = User & Document;
 
 export function getUserSchema(): mongooseSchema<User> {
   const userSchema = SchemaFactory.createForClass(User);
