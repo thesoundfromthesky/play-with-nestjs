@@ -36,6 +36,8 @@ export class Login implements PasswordPlugin {
 
 export function getLoginSchema(): mongooseSchema<Login> {
   const loginSchema = SchemaFactory.createForClass(Login);
+  
+  loginSchema.plugin(passwordPlugin);
 
   loginSchema.index(
     { username: 1 },
@@ -47,8 +49,6 @@ export function getLoginSchema(): mongooseSchema<Login> {
       },
     },
   );
-
-  loginSchema.plugin(passwordPlugin);
 
   return loginSchema;
 }

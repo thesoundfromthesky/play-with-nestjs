@@ -1,4 +1,4 @@
-interface PasswordPluginVirtual{
+interface PasswordPluginVirtual {
   passwordConfirmation: string;
   originalPassword: string;
   currentPassword: string;
@@ -10,10 +10,12 @@ interface PasswordPluginVirtual{
   _newPassword: string;
 }
 
-interface PasswordPluginVirtualMethod{
+interface PasswordPluginVirtualMethod {
   authenticate?(password: string): boolean;
 }
 
-export interface PasswordPlugin extends PasswordPluginVirtual, PasswordPluginVirtualMethod{
+export interface PasswordPlugin
+  extends PasswordPluginVirtual,
+    PasswordPluginVirtualMethod {
   password: string;
 }
