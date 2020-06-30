@@ -60,7 +60,9 @@ export class User implements DateAtPlugin, IsDeletedPlugin {
   isDeleted: boolean;
 }
 
-export type UserDoc = User & Document;
+// export type UserDoc = User & Document;
+
+export interface UserDoc extends User, Omit<Document, 'id'> {}
 
 export function getUserSchema(): mongooseSchema<User> {
   const userSchema = SchemaFactory.createForClass(User);
