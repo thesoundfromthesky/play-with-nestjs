@@ -86,14 +86,12 @@ export class UserService {
     return this.findOne(queryUserById(id), options);
   }
 
-  findOneByUsername(
+  findByUsername(
     username: string,
     options?: QueryOptions,
   ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
-    if (options) {
-      if (!('select' in options)) {
-        options.select = '+login.password';
-      }
+    if (options && !('select' in options)) {
+      options.select = '+login.password';
     } else {
       options = { select: '+login.password' };
     }

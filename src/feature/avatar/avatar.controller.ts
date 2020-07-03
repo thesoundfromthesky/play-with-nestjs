@@ -34,7 +34,7 @@ export class AvatarController {
     @Id() id: string,
   ): Promise<string> {
     await this.avatarService.create(file, id);
-    const imgUrl = `${this.avatarService.baseUrl}/${id}`;
+    const imgUrl = `${this.avatarService.baseUrl}/api/${avatarMulterConfig.baseEndpoint}/${id}`;
 
     await this.avatarService.updateUser(id, {
       avatar: imgUrl,
@@ -66,7 +66,7 @@ export class AvatarController {
   ): Promise<string> {
     await this.avatarService.update(id, file);
 
-    const imgUrl = `${this.avatarService.baseUrl}/${id}`;
+    const imgUrl = `${this.avatarService.baseUrl}/api/${avatarMulterConfig.baseEndpoint}/${id}`;
 
     return imgUrl;
   }

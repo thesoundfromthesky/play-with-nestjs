@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { UserService } from '../user/user.service';
-import * as bcrypt from 'bcryptjs';
+// import * as bcrypt from 'bcryptjs';
 import { JwtPayload } from 'src/shared';
 import {
   CreateUserDto,
@@ -99,6 +99,7 @@ export class AuthService {
     // return auth;
   }
 
+
   @ToObject()
   @Save()
   update(
@@ -130,41 +131,42 @@ export class AuthService {
     return auth;
   }
 
-  async updateUser(profile: User, email: string): Promise<UserDoc> {
-    const user = await this.userService.findOneByEmail(email, {
-      lean: false,
-      entity: false,
-      orFail: false,
-    });
-    const { name, emails } = profile;
+  // async updateUser(profile: User, email: string): Promise<UserDoc> {
+  //   const user = await this.userService.findOneByEmail(email, {
+  //     lean: false,
+  //     entity: false,
+  //     orFail: false,
+  //   });
+  //   const { name, emails } = profile;
 
-    if (!user) {
-      const newUser: any = {
-        name,
-        emails,
-        socialMediaHandles: { google: emails[0].value },
-      };
+  //   if (!user) {
+  //     const newUser: any = {
+  //       name,
+  //       emails,
+  //       socialMediaHandles: { google: emails[0].value },
+  //     };
 
-      return await this.userService.create(newUser);
-    } else {
-      if (user.socialMediaHandles.get('google')) {
-        return user;
-      } else {
-        user.socialMediaHandles.set('google', emails[0].value);
-        const savedUser = await user.save();
-        return savedUser.toObject();
-      }
-    }
-  }
+  //     return await this.userService.create(newUser);
+  //   } else {
+  //     if (user.socialMediaHandles.get('google')) {
+  //       return user;
+  //     } else {
+  //       user.socialMediaHandles.set('google', emails[0].value);
+  //       const savedUser = await user.save();
+  //       return savedUser.toObject();
+  //     }
+  //   }
+  // }
 
-  async validateUser(username: string, pass: string): Promise<UserDoc | null> {
-    const user = await this.userService.findOneByUsername(username);
-    if (bcrypt.compareSync(pass, user.login.password)) {
-      delete user.login.password;
-      return user;
-    }
-    return null;
-  }
+  // async validateUser(username: string, pass: string): Promise<UserDoc | null> {
+  //   const user = await this.userService.findByUsername(username);
+
+  //   if (bcrypt.compareSync(pass, user.login.password)) {
+  //     delete user.login.password;
+  //     return user;
+  //   }
+  //   return null;
+  // }
 
   async login({
     id,
