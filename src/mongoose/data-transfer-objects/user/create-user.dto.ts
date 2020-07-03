@@ -12,6 +12,7 @@ import { selectFirst } from '../../util';
 import { CreateLoginDto } from './create-login.dto';
 
 export class CreateUserDto implements User {
+
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => NameDto)
@@ -29,6 +30,7 @@ export class CreateUserDto implements User {
   @Type(() => CreateLoginDto)
   login: CreateLoginDto;
 
+  avatar: string;
   socialMediaHandles: Map<string, string>;
   roles: Role[];
   isDeleted: boolean;

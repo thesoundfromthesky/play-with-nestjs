@@ -42,6 +42,9 @@ export class User implements DateAtPlugin, IsDeletedPlugin {
     default: Role.User,
   })
   roles: Role[];
+  
+  @Prop({ type: String })
+  avatar: string;
 
   @Prop({ type: Map, of: String, default: {} })
   socialMediaHandles: Map<string, string>;

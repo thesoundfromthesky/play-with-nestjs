@@ -8,6 +8,7 @@ export class UserEntity implements User {
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
   }
+
   @Type(() => NameEntity)
   @Expose()
   readonly name: Name;
@@ -21,7 +22,10 @@ export class UserEntity implements User {
 
   @Type(() => LoginEntity)
   @Expose()
-  login:  Login;
+  login: Login;
+
+  @Expose()
+  avatar: string;
 
   @Expose()
   socialMediaHandles: Map<string, string>;

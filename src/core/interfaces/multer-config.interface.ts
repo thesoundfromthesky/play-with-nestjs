@@ -5,5 +5,6 @@ export interface MulterConfig {
   dest: string;
   fileSize: number;
   files: number;
+  baseEndpoint:string;
   multerOptions: MulterOptions;
 }

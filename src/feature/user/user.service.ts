@@ -127,7 +127,9 @@ export class UserService {
   @ToObject()
   @Save()
   async update(
-    { id, body }: { id: string; body: UpdateUserDto },
+    id: string,
+    // body: UpdateUserDto,
+    body: User,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
   ): Promise<User> {
@@ -157,12 +159,15 @@ export class UserService {
       } as any;
       user.login.currentPassword = body.login.currentPassword;
     }
+
     merge(user, body);
 
     return user;
   }
 
-  async delete(id: string): Promise<string> {
+  @ToObject()
+  @Save()
+  async delete(id: string): Promise<User> {
     // const user = await this.userModel
     //   .findOne({
     //     _id: id,
@@ -172,7 +177,7 @@ export class UserService {
     const user = await this.findById(id, { lean: false, entity: false });
 
     user.isDeleted = true;
-    const savedUser = await user.save();
-    return `${savedUser.id} has been deleted`;
+
+    return user;
   }
 }

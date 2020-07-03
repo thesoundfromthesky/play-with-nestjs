@@ -86,7 +86,7 @@ export class AuthService {
     // return auth;
   }
 
-  findOneByUser(
+  findByUserId(
     userId: string,
     options?: QueryOptions,
   ): DocumentQuery<AuthDoc, AuthDoc, Record<string, unknown>> {
@@ -107,7 +107,7 @@ export class AuthService {
     options?: QueryOptions,
   ): DocumentQuery<AuthDoc, AuthDoc, Record<string, unknown>> {
     // logic not implemented
-    return this.findOneByUser(userId, { lean: false });
+    return this.findByUserId(userId, { lean: false });
   }
 
   @ToObject()
@@ -123,7 +123,7 @@ export class AuthService {
     //     isDeleted: false,
     //   })
     //   .orFail();
-    const auth = await this.findOneByUser(userId, { lean: false });
+    const auth = await this.findByUserId(userId, { lean: false });
 
     auth.isDeleted = true;
 
@@ -175,7 +175,7 @@ export class AuthService {
     const access_token = this.tokenService.generateAccessToken(payload);
     const refresh_token = this.tokenService.generateRefreshToken(payload);
 
-    const auth = await this.findOneByUser(id, { lean: false, orFail: false });
+    const auth = await this.findByUserId(id, { lean: false, orFail: false });
 
     // client.set("key", "value", redis.print);
     // client.get("key", redis.print);
@@ -199,7 +199,7 @@ export class AuthService {
     emails,
     roles,
   }: JwtPayload): Promise<{ message: string } | string> {
-    const auth = await this.findOneByUser(id, {
+    const auth = await this.findByUserId(id, {
       lean: false,
     });
     if (auth.refreshToken) {
@@ -230,7 +230,7 @@ export class AuthService {
   ): Promise<{ token: Partial<TokenPayload> }> {
     const token: JwtPayload = this.tokenService.verifyToken(refreshToken);
     const { id, emails, roles } = token;
-    const auth = await this.findOneByUser(id, {
+    const auth = await this.findByUserId(id, {
       lean: false,
       populate: { path: User.name.toLowerCase(), select: 'id emails roles' },
     });
