@@ -86,8 +86,8 @@ export class AvatarService {
     return avatar;
   }
 
-  updateUser(id: string, body: User): Promise<User> {
-    return this.userService.update(id, body);
+  updateUser(id: string, body: User, options?:QueryOptions): Promise<User> {
+    return this.userService.update(id, body, options);
   }
 
   @ToObject()

@@ -10,6 +10,7 @@ export function passwordPlugin<T extends PasswordPlugin & Document>(
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,16}$/;
   const passwordRegexErrorMessage =
     'Should be minimum 8 characters of alphabet and number combination!';
+  
   schema.path('password').validate(function(this: T /*v: string*/) {
     // create user
     if (this.isNew) {
@@ -93,6 +94,7 @@ export function passwordPlugin<T extends PasswordPlugin & Document>(
   };
 
   schema.pre('save', function(this: T, next: NextFunction) {
+
     if (this.isModified('password')) {
       this.password = bcrypt.hashSync(this.password);
     }

@@ -27,7 +27,7 @@ export const userCollation: CollationOptions = { locale: 'en_US', strength: 2 };
   // id: false,
 })
 export class User implements DateAtPlugin, IsDeletedPlugin {
-  @Prop(getLoginSchema())
+  @Prop({ type: getLoginSchema() })
   login: Login;
 
   @Prop({ type: getNameSchema(), required: true })
@@ -42,7 +42,7 @@ export class User implements DateAtPlugin, IsDeletedPlugin {
     default: Role.User,
   })
   roles: Role[];
-  
+
   @Prop({ type: String })
   avatar: string;
 
