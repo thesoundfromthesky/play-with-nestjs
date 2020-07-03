@@ -14,6 +14,7 @@ import { NameDto, EmailDto } from './sub-data-transfer-objects';
 import { UpdateLoginDto } from './update-login.dto';
 
 export class UpdateUserDto implements User {
+
   readonly name: NameDto;
   
   @Transform(selectFirst)
@@ -27,6 +28,7 @@ export class UpdateUserDto implements User {
   @Type(() => UpdateLoginDto)
   login: UpdateLoginDto;
 
+  avatar: string;
   socialMediaHandles: Map<string, string>;
   roles: Role[];
   isDeleted: boolean;

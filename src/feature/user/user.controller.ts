@@ -11,7 +11,6 @@ import {
   UploadedFile,
   UnsupportedMediaTypeException,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Page, PagePayload, Id, AuthStrategy, IdGuard } from 'src/shared';
@@ -48,12 +47,15 @@ export class UserController {
     @Id() id: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<User> {
-    return this.usersService.update({ id, body: updateUserDto });
+    return this.usersService.update(id, updateUserDto);
   }
 
   @UseGuards(AuthGuard(AuthStrategy.Jwt), IdGuard)
   @Delete(':id')
-  delete(@Id() id: string): Promise<string> {
-    return this.usersService.delete(id);
+  async delete(@Id() id: string): Promise<string> {
+    
+    const user = await this.usersService.delete(id);
+
+    return `${user.id} has been deleted`;
   }
 }
