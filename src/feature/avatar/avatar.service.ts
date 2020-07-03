@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import {
   Avatar,
-  AvatarDoc,
   QueryOptions,
   Save,
   User,
@@ -9,11 +8,12 @@ import {
   Lean,
   OrFail,
   Populate,
-  queryAvatarByUserId,
-  queryAvatarById,
+  AvatarDocumentQuery,
+  AvatarQuery,
+  AvatarDocument,
 } from 'src/mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, MongooseFilterQuery, DocumentQuery } from 'mongoose';
+import { Model, MongooseFilterQuery } from 'mongoose';
 import { Express } from 'express';
 import { UserService } from '../user/user.service';
 import { ApiConfigService } from 'src/core';
@@ -21,7 +21,8 @@ import { ApiConfigService } from 'src/core';
 @Injectable()
 export class AvatarService {
   constructor(
-    @InjectModel(Avatar.name) private readonly avatarModel: Model<AvatarDoc>,
+    @InjectModel(Avatar.name)
+    private readonly avatarModel: Model<AvatarDocument, AvatarQuery>,
     private readonly userService: UserService,
     private readonly apiConfigService: ApiConfigService,
   ) {}
@@ -37,7 +38,7 @@ export class AvatarService {
     id: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): Promise<AvatarDoc> {
+  ): Promise<AvatarDocument> {
     return new this.avatarModel({
       user: id,
       filename,
@@ -53,31 +54,29 @@ export class AvatarService {
     query: MongooseFilterQuery<any>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): DocumentQuery<AvatarDoc, AvatarDoc, Record<string, unknown>> {
+  ): AvatarDocumentQuery {
     return this.avatarModel.findOne(query);
   }
 
-  findById(
-    id: string,
-    options?: QueryOptions,
-  ): DocumentQuery<AvatarDoc, AvatarDoc, Record<string, unknown>> {
-    return this.findOne(queryAvatarById(id), options);
+  // findById(id: string, options?: QueryOptions): AvatarDocumentQuery {
+  //   return this.findOne(queryAvatarById(id), options);
+  // }
+
+  byUserId(userId: string): AvatarDocumentQuery {
+    return this.avatarModel.findOne().byUserId(userId);
   }
 
-  findByUserId(
-    id: string,
-    options?: QueryOptions,
-  ): DocumentQuery<AvatarDoc, AvatarDoc, Record<string, unknown>> {
-    return this.findOne(queryAvatarByUserId(id), options);
+  findByUserId(userId: string, options?: QueryOptions): AvatarDocumentQuery {
+    return this.findOne(this.byUserId(userId), options);
   }
 
   @ToObject()
   @Save()
   async update(
-    id: string,
+    userId: string,
     { mimetype, originalname, filename }: Express.Multer.File,
-  ): Promise<AvatarDoc> {
-    const avatar = await this.findByUserId(id, { lean: false });
+  ): Promise<AvatarDocument> {
+    const avatar = await this.findByUserId(userId, { lean: false });
 
     avatar.mimetype = mimetype;
     avatar.originalname = originalname;
@@ -86,14 +85,14 @@ export class AvatarService {
     return avatar;
   }
 
-  updateUser(id: string, body: User, options?:QueryOptions): Promise<User> {
-    return this.userService.update(id, body, options);
+  updateUser(userId: string, body: User, options?: QueryOptions): Promise<User> {
+    return this.userService.update(userId, body, options);
   }
 
   @ToObject()
   @Save()
-  async delete(id: string): Promise<Avatar> {
-    const avatar = await this.findByUserId(id, { lean: false });
+  async delete(userId: string): Promise<Avatar> {
+    const avatar = await this.findByUserId(userId, { lean: false });
 
     avatar.isDeleted = true;
 

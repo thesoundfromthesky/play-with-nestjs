@@ -12,6 +12,7 @@ export function passwordPlugin<T extends PasswordPlugin & Document>(
     'Should be minimum 8 characters of alphabet and number combination!';
   
   schema.path('password').validate(function(this: T /*v: string*/) {
+    
     // create user
     if (this.isNew) {
       if (!this.passwordConfirmation) {
@@ -31,7 +32,7 @@ export function passwordPlugin<T extends PasswordPlugin & Document>(
     }
 
     // update user
-    if (!this.isNew) {
+    if (!this.isNew && this.isDirectSelected("login.password")) {
       if (!this.currentPassword) {
         this.invalidate('currentPassword', 'Current Password is required!');
       }

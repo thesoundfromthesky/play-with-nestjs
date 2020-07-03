@@ -4,14 +4,14 @@ import { DateAtPlugin, IsDeletedPlugin } from 'src/mongoose/interfaces';
 import { Role } from 'src/mongoose/enums';
 import {
   getEmailSchema,
-  Email,
   getLoginSchema,
-  Login,
   getNameSchema,
-  Name,
+  LoginDocument,
+  EmailDocument,
+  NameDocument,
 } from './sub-schemas';
 import { dateAtPlugin, isDeletedPlugin } from 'src/mongoose/plugins';
-import { Document } from 'mongoose';
+import { userQuery } from './user.query';
 
 export const userCollation: CollationOptions = { locale: 'en_US', strength: 2 };
 
@@ -28,13 +28,13 @@ export const userCollation: CollationOptions = { locale: 'en_US', strength: 2 };
 })
 export class User implements DateAtPlugin, IsDeletedPlugin {
   @Prop({ type: getLoginSchema() })
-  login: Login;
+  login: LoginDocument;
 
   @Prop({ type: getNameSchema(), required: true })
-  name: Name;
+  name: NameDocument;
 
   @Prop([getEmailSchema()])
-  emails: Email[];
+  emails: EmailDocument[];
 
   @Prop({
     type: [String],
@@ -52,26 +52,26 @@ export class User implements DateAtPlugin, IsDeletedPlugin {
   @Prop({ type: Date, immutable: true })
   createdAt: Date;
 
+  id: string;
+
   updatedAt: Date;
   createdDate: string;
   createdTime: string;
   updatedDate: string;
   updatedTime: string;
 
-  id: string;
-
   isDeleted: boolean;
 }
-
-// export type UserDoc = User & Document;
-
-export interface UserDoc extends User, Omit<Document, 'id'> {}
 
 export function getUserSchema(): mongooseSchema<User> {
   const userSchema = SchemaFactory.createForClass(User);
 
+  // Misc
   userSchema.plugin(dateAtPlugin);
   userSchema.plugin(isDeletedPlugin);
+
+  // Query
+  userSchema.plugin(userQuery);
 
   userSchema.index({ isDeleted: 1 });
 
@@ -99,37 +99,5 @@ export function getUserSchema(): mongooseSchema<User> {
     }
   });
 
-  // schema.path("socialMediaHandles").get(function(this, social) {
-  //   if (social instanceof Map && !social.get("google")) {
-  //     social.set("google", "");
-  //   } else {
-  //     social.google = "";
-  //   }
-  //   return social;
-  // });
-  // schema.path("roles").get(function(this, roles: Role[]) {
-  //   return roles.map(role => {
-  //     let level;
-  //     switch (role) {
-  //       case Role.User:
-  //         level = 1;
-  //       case Role.Admin:
-  //         level = 2;
-  //       default:
-  //         level = 1;
-  //     }
-  //     return { role, level };
-  //   });
-  // });
-  //   db.collection.createIndex(
-  //     { orderDate: 1, category: 1 },
-  //     { name: "date_category_fr", collation: { locale: "en_US", strength: 2 } }
-  //  )
-  // schema.plugin(namePlugin);
-
   return userSchema;
-}
-
-export function queryUserById(id: string): { _id: string; isDeleted: boolean } {
-  return { _id: id, isDeleted: false };
 }

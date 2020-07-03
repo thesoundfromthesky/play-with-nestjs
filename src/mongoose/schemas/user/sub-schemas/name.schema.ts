@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Schema as mongooseSchema } from 'mongoose';
+import { Schema as mongooseSchema, Document } from 'mongoose';
 import { userCollation } from '../user.schema';
 
 @Schema({ _id: false, id: false })
@@ -22,6 +22,8 @@ export class Name {
   })
   givenName: string;
 }
+
+export interface NameDocument extends Name, Omit<Document, 'id'> {}
 
 export function getNameSchema(): mongooseSchema<Name> {
   const nameSchema = SchemaFactory.createForClass(Name);

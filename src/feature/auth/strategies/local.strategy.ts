@@ -22,7 +22,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
   //   return user;
   // }
   async validate(username: string, password: string): Promise<any> {
-    const user = await this.userService.findByUsername(username, {
+    const user = await this.userService.findByLoginUsername(username, {
       lean: false,
       entity: false,
     });

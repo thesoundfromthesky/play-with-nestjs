@@ -6,8 +6,9 @@ import {
 } from 'mongoose';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { dateAtPlugin, isDeletedPlugin } from '../../plugins';
-import { User, UserDoc } from '../user';
+import { User, UserDocument } from '../user';
 import { IsDeletedPlugin, DateAtPlugin } from 'src/mongoose';
+import { authQuery } from './auth.query';
 
 export const authCollation: CollationOptions = { locale: 'en_US', strength: 2 };
 
@@ -23,7 +24,7 @@ export const authCollation: CollationOptions = { locale: 'en_US', strength: 2 };
 })
 export class Auth implements DateAtPlugin, IsDeletedPlugin {
   @Prop({ type: Types.ObjectId, required: true, ref: User.name })
-  user: UserDoc;
+  user: UserDocument;
 
   @Prop({ type: String })
   refreshToken: string;
@@ -40,13 +41,15 @@ export class Auth implements DateAtPlugin, IsDeletedPlugin {
   isDeleted: boolean;
 }
 
-export interface AuthDoc extends Auth, Omit<Document, 'id'> {}
-
 export function getAuthSchema(): mongooseSchema<Auth> {
   const authSchema = SchemaFactory.createForClass(Auth);
 
+  // Misc
   authSchema.plugin(dateAtPlugin);
   authSchema.plugin(isDeletedPlugin);
+  
+  // Query
+  authSchema.plugin(authQuery);
 
   authSchema.index({ isDeleted: 1 });
 
@@ -60,9 +63,3 @@ export function getAuthSchema(): mongooseSchema<Auth> {
   return authSchema;
 }
 
-export function queryAuthByUserId(
-  id: string,
-  isDeleted = false,
-): { user: string; isDeleted: boolean } {
-  return { user: id, isDeleted };
-}

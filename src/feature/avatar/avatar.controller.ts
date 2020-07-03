@@ -36,9 +36,13 @@ export class AvatarController {
     await this.avatarService.create(file, id);
     const imgUrl = `${this.avatarService.baseUrl}/api/${avatarMulterConfig.baseEndpoint}/${id}`;
 
-    await this.avatarService.updateUser(id, {
-      avatar: imgUrl,
-    } as User);
+    await this.avatarService.updateUser(
+      id,
+      {
+        avatar: imgUrl,
+      } as User,
+      { select: null },
+    );
 
     return imgUrl;
   }
