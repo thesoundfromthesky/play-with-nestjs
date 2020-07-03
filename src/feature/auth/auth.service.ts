@@ -9,15 +9,16 @@ import {
   OrFail,
   Lean,
   Auth,
-  queryAuthByUserId,
   QueryOptions,
   UserToEntity,
   Populate,
-  AuthDoc,
   User,
-  UserDoc,
+  UserDocumentQuery,
+  AuthDocumentQuery,
+  AuthQuery,
+  AuthDocument,
 } from 'src/mongoose';
-import { Model, MongooseFilterQuery, DocumentQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { PagePayload, TokenPayload } from 'src/shared';
 import { TokenService, RedisService } from './services';
@@ -29,7 +30,8 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly tokenService: TokenService,
     // private readonly redisService: RedisService,
-    @InjectModel(Auth.name) private readonly authModel: Model<AuthDoc>,
+    @InjectModel(Auth.name)
+    private readonly authModel: Model<AuthDocument, AuthQuery>,
     private readonly apiConfigService: ApiConfigService,
   ) {}
 
@@ -39,10 +41,8 @@ export class AuthService {
     auth: Partial<Auth>,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): AuthDoc {
+  ): AuthDocument {
     return new this.authModel(auth);
-    // const savedAuth = await newAuth.save();
-    // return savedAuth.toObject();
   }
 
   async findAll(
@@ -73,43 +73,30 @@ export class AuthService {
   @Lean()
   @Populate()
   findOne(
-    query: MongooseFilterQuery<any>,
+    query: AuthDocumentQuery,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): DocumentQuery<AuthDoc, AuthDoc, Record<string, unknown>> {
-    return this.authModel.findOne(query);
-    // const auth = await this.authModel
-    //   .findOne({ user })
-    //   .lean({ virtuals: true, getters: true, defaults: true })
-    //   .orFail();
-
-    // return auth;
+  ): AuthDocumentQuery {
+    return query;
   }
 
-  findByUserId(
-    userId: string,
-    options?: QueryOptions,
-  ): DocumentQuery<AuthDoc, AuthDoc, Record<string, unknown>> {
-    return this.findOne(queryAuthByUserId(userId), options);
-    // const auth = await this.authModel
-    //   .findOne({ user })
-    //   .lean({ virtuals: true, getters: true, defaults: true })
-    //   .orFail();
-
-    // return auth;
+  byUserId(userId: string): AuthDocumentQuery {
+    return this.authModel.findOne().byUserId(userId);
   }
 
-
-  @ToObject()
-  @Save()
-  update(
-    { userId, body }: { userId: string; body: Record<string, unknown> },
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    options?: QueryOptions,
-  ): DocumentQuery<AuthDoc, AuthDoc, Record<string, unknown>> {
-    // logic not implemented
-    return this.findByUserId(userId, { lean: false });
+  findByUserId(userId: string, options?: QueryOptions): AuthDocumentQuery {
+    return this.findOne(this.byUserId(userId), options);
   }
+
+  // @ToObject()
+  // @Save()
+  // update(
+  //   { userId, body }: { userId: string; body: Record<string, unknown> },
+  //   // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  //   options?: QueryOptions,
+  // ): AuthDocumentQuery {
+  //   return this.findByUserId(userId, { lean: false });
+  // }
 
   @ToObject()
   @Save()
@@ -117,56 +104,13 @@ export class AuthService {
     userId: string,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): Promise<AuthDoc> {
-    // const auth = await this.authModel
-    //   .findOne({
-    //     user,
-    //     isDeleted: false,
-    //   })
-    //   .orFail();
+  ): Promise<AuthDocument> {
     const auth = await this.findByUserId(userId, { lean: false });
 
     auth.isDeleted = true;
 
     return auth;
   }
-
-  // async updateUser(profile: User, email: string): Promise<UserDoc> {
-  //   const user = await this.userService.findOneByEmail(email, {
-  //     lean: false,
-  //     entity: false,
-  //     orFail: false,
-  //   });
-  //   const { name, emails } = profile;
-
-  //   if (!user) {
-  //     const newUser: any = {
-  //       name,
-  //       emails,
-  //       socialMediaHandles: { google: emails[0].value },
-  //     };
-
-  //     return await this.userService.create(newUser);
-  //   } else {
-  //     if (user.socialMediaHandles.get('google')) {
-  //       return user;
-  //     } else {
-  //       user.socialMediaHandles.set('google', emails[0].value);
-  //       const savedUser = await user.save();
-  //       return savedUser.toObject();
-  //     }
-  //   }
-  // }
-
-  // async validateUser(username: string, pass: string): Promise<UserDoc | null> {
-  //   const user = await this.userService.findByUsername(username);
-
-  //   if (bcrypt.compareSync(pass, user.login.password)) {
-  //     delete user.login.password;
-  //     return user;
-  //   }
-  //   return null;
-  // }
 
   async login({
     id,
@@ -221,9 +165,7 @@ export class AuthService {
     return token;
   }
 
-  getProfile(
-    user: JwtPayload,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
+  getProfile(user: JwtPayload): UserDocumentQuery {
     return this.userService.findById(user.id);
   }
 
@@ -268,9 +210,6 @@ export class AuthService {
     const payload = await this.login(user);
     const token = encodeURIComponent(JSON.stringify(payload));
     return `${this.apiConfigService.redirect}/auth/callback?token=${token}`;
-    // res.redirect(
-    //   `${this.apiConfigService.redirect}/auth/callback?token=${token}`,
-    // );
   }
 
   @UserToEntity()

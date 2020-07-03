@@ -1,15 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, DocumentQuery, MongooseFilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import {
   User,
-  UserDoc,
   QueryOptions,
-  queryLoginByUsername,
-  queryEmailByValue,
-  queryUserById,
+  UserQuery,
+  UserDocument,
+  UserDocumentQuery,
 } from 'src/mongoose';
-import { CreateUserDto, UpdateUserDto } from 'src/mongoose';
+import { CreateUserDto } from 'src/mongoose';
 import { PagePayload } from 'src/shared';
 import { merge } from 'lodash/fp/object';
 import {
@@ -25,7 +24,8 @@ import {
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name) private readonly userModel: Model<UserDoc>,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument, UserQuery>,
   ) {}
 
   @UserToEntity()
@@ -35,7 +35,7 @@ export class UserService {
     createUserDto: CreateUserDto,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): Promise<UserDoc> {
+  ): Promise<UserDocument> {
     return new this.userModel(createUserDto);
   }
 
@@ -72,53 +72,43 @@ export class UserService {
   @Lean()
   @Select()
   findOne(
-    query: MongooseFilterQuery<any>,
+    query: UserDocumentQuery,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
-    return this.userModel.findOne(query);
+  ): UserDocumentQuery {
+    return query;
   }
 
-  findById(
-    id: string,
-    options?: QueryOptions,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
-    return this.findOne(queryUserById(id), options);
+  byId(id: string): UserDocumentQuery {
+    return this.userModel.findOne().byId(id);
   }
 
-  findByUsername(
+  byLoginUsername(username: string): UserDocumentQuery {
+    return this.userModel.findOne().byLoginUsername(username);
+  }
+
+  byEmailValue(email: string): UserDocumentQuery {
+    return this.userModel.findOne().byEmailValue(email);
+  }
+
+  findById(id: string, options?: QueryOptions): UserDocumentQuery {
+    return this.findOne(this.byId(id), options);
+  }
+
+  findByLoginUsername(
     username: string,
     options?: QueryOptions,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
+  ): UserDocumentQuery {
     if (options && !('select' in options)) {
       options.select = '+login.password';
     } else {
       options = { select: '+login.password' };
     }
-
-    return this.findOne(queryLoginByUsername(username), options);
-    // return this.userModel
-    //   .findOne({ 'login.username': { $eq: username, $exists: true } })
-    //   .select('+login.password');
-    // const user = await this.userModel
-    //   .findOne({ 'login.username': { $eq: username, $exists: true } })
-    //   .select('+login.password')
-    //   .lean({ virtuals: true, getters: true, defaults: true })
-    //   .orFail();
-    // return user;
+    return this.findOne(this.byLoginUsername(username), options);
   }
 
-  findOneByEmail(
-    email: string,
-    options?: QueryOptions,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
-    return this.findOne(queryEmailByValue(email), options);
-
-    // const user = this.userModel.findOne({
-    //   'emails.value': email,
-    //   isDeleted: false,
-    // });
-    // return user;
+  findByEmailValue(email: string, options?: QueryOptions): UserDocumentQuery {
+    return this.findOne(this.byEmailValue(email), options);
   }
 
   @UserToEntity()
@@ -131,31 +121,26 @@ export class UserService {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     options?: QueryOptions,
   ): Promise<User> {
-    // const user = await this.userModel
-    //   .findOne({ _id: id, isDeleted: false })
-    //   .select('+login.password')
-    //   .orFail();
-
     const user = await this.findById(id, {
       lean: false,
       entity: false,
-      select: '+login.password',
+      select: options?.select === null ? undefined : '+login.password',
     });
 
-    if (user.login) {
-      const userLogin = user.login;
-      const bodyLogin = body.login;
+    if (options?.select) {
+      if (user.login) {
+        const userLogin = user.login;
+        const bodyLogin = body.login;
 
-      userLogin.originalPassword = userLogin.password;
-      userLogin.password = bodyLogin?.newPassword
-        ? bodyLogin.newPassword
-        : userLogin.password;
-    } else {
-      user.login = {
-        username: body.login.username,
-        password: body.login.currentPassword,
-      } as any;
-      user.login.currentPassword = body.login.currentPassword;
+        userLogin.originalPassword = userLogin.password;
+        userLogin.password = bodyLogin?.newPassword || userLogin.password;
+      } else {
+        user.login = {
+          username: body.login.username,
+          password: body.login.currentPassword,
+        } as any;
+        user.login.currentPassword = body.login.currentPassword;
+      }
     }
 
     merge(user, body);
@@ -166,12 +151,6 @@ export class UserService {
   @ToObject()
   @Save()
   async delete(id: string): Promise<User> {
-    // const user = await this.userModel
-    //   .findOne({
-    //     _id: id,
-    //     isDeleted: false,
-    //   })
-    //   .orFail();
     const user = await this.findById(id, { lean: false, entity: false });
 
     user.isDeleted = true;

@@ -1,5 +1,5 @@
-import { Login } from "../../schemas";
-import { IsString } from "class-validator";
+import { Login } from '../../schemas';
+import { IsString } from 'class-validator';
 
 export class CreateLoginDto implements Login {
   @IsString()

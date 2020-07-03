@@ -9,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { CreateUserDto, UserDoc, User as IUser } from 'src/mongoose';
+import { CreateUserDto, User as IUser, UserDocument, UserDocumentQuery } from 'src/mongoose';
 import {
   AuthStrategy,
   User,
@@ -18,7 +18,6 @@ import {
   SocialMedia,
   TokenPayload,
 } from 'src/shared';
-import { DocumentQuery } from 'mongoose';
 
 @Controller('api/auth')
 export class AuthController {
@@ -47,9 +46,7 @@ export class AuthController {
 
   @UseGuards(AuthGuard(AuthStrategy.Jwt))
   @Get('profile')
-  getProfile(
-    @User() user: JwtPayload,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
+  getProfile(@User() user: JwtPayload): UserDocumentQuery {
     return this.authService.getProfile(user);
   }
 
@@ -73,7 +70,6 @@ export class AuthController {
     @User() user: JwtPayload,
   ): Promise<{ url: string; statusCode: number }> {
     // handles the Google OAuth2 callback
-    // return this.authService.googleCallback(user);
     const url = await this.authService.googleCallback(user);
     return { url, statusCode: 301 };
   }

@@ -8,7 +8,7 @@ import {
 import { ApiConfigService } from 'src/core';
 import { AuthStrategy } from 'src/shared';
 import { TokenService } from '../services';
-import { User, UserDoc } from 'src/mongoose';
+import { User, UserDocument } from 'src/mongoose';
 import { Request } from 'express';
 import { UserService } from 'src/feature/user/user.service';
 
@@ -61,8 +61,8 @@ export class GoogleStrategy extends PassportStrategy(
     );
   }
 
-  async updateUser(profile: User, email: string): Promise<UserDoc> {
-    const user = await this.userService.findOneByEmail(email, {
+  async updateUser(profile: User, email: string): Promise<UserDocument> {
+    const user = await this.userService.findByEmailValue(email, {
       lean: false,
       entity: false,
       orFail: false,

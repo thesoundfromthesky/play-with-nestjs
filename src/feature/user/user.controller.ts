@@ -4,25 +4,27 @@ import {
   Body,
   Get,
   Put,
-  SerializeOptions,
+  //SerializeOptions,
   Delete,
   UseGuards,
-  UseInterceptors,
-  UploadedFile,
-  UnsupportedMediaTypeException,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { AuthGuard } from '@nestjs/passport';
 import { Page, PagePayload, Id, AuthStrategy, IdGuard } from 'src/shared';
-import { CreateUserDto, UpdateUserDto, UserDoc, User } from 'src/mongoose';
-import { DocumentQuery } from 'mongoose';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  User,
+  UserDocumentQuery,
+  UserDocument,
+} from 'src/mongoose';
 
 @Controller('api/users')
 export class UserController {
   constructor(private readonly usersService: UserService) {}
 
   @Post()
-  create(@Body() createUserDto: CreateUserDto): Promise<UserDoc> {
+  create(@Body() createUserDto: CreateUserDto): Promise<UserDocument> {
     return this.usersService.create(createUserDto);
   }
 
@@ -34,9 +36,7 @@ export class UserController {
   }
 
   @Get(':id')
-  findById(
-    @Id() id: string,
-  ): DocumentQuery<UserDoc, UserDoc, Record<string, unknown>> {
+  findById(@Id() id: string): UserDocumentQuery {
     return this.usersService.findById(id);
   }
 
@@ -53,7 +53,6 @@ export class UserController {
   @UseGuards(AuthGuard(AuthStrategy.Jwt), IdGuard)
   @Delete(':id')
   async delete(@Id() id: string): Promise<string> {
-    
     const user = await this.usersService.delete(id);
 
     return `${user.id} has been deleted`;

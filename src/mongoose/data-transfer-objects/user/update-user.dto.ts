@@ -4,29 +4,33 @@ import {
   ArrayNotEmpty,
 } from 'class-validator';
 
-import { User } from '../../schemas';
+import {
+  User,
+  LoginDocument,
+  EmailDocument,
+  NameDocument,
+} from '../../schemas';
 import { Role } from '../../enums';
 
 import { Type, Transform } from 'class-transformer';
 
 import { selectFirst } from '../../util';
-import { NameDto, EmailDto } from './sub-data-transfer-objects';
+import { EmailDto } from './sub-data-transfer-objects';
 import { UpdateLoginDto } from './update-login.dto';
 
 export class UpdateUserDto implements User {
+  readonly name: NameDocument;
 
-  readonly name: NameDto;
-  
   @Transform(selectFirst)
   @ArrayNotEmpty()
   @ValidateNested()
   @Type(() => EmailDto)
-  emails: EmailDto[];
+  emails: EmailDocument[];
 
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => UpdateLoginDto)
-  login: UpdateLoginDto;
+  login: LoginDocument;
 
   avatar: string;
   socialMediaHandles: Map<string, string>;

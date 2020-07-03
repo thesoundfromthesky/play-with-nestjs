@@ -6,8 +6,9 @@ import {
   Document,
 } from 'mongoose';
 import { dateAtPlugin, isDeletedPlugin } from '../../plugins';
-import { User, UserDoc } from '../user';
+import { User, UserDocument } from '../user';
 import { DateAtPlugin, IsDeletedPlugin } from '../../interfaces';
+import { avatarQuery } from './avatar.query';
 
 export const avatarCollation: CollationOptions = {
   locale: 'en_US',
@@ -27,7 +28,7 @@ export const avatarCollation: CollationOptions = {
 })
 export class Avatar implements DateAtPlugin, IsDeletedPlugin {
   @Prop({ type: Types.ObjectId, required: true, ref: User.name })
-  user: UserDoc;
+  user: UserDocument;
 
   @Prop({ type: String, required: true })
   originalname: string;
@@ -42,7 +43,7 @@ export class Avatar implements DateAtPlugin, IsDeletedPlugin {
   createdAt: Date;
 
   id: string;
-  
+
   updatedAt: Date;
   createdDate: string;
   createdTime: string;
@@ -51,13 +52,15 @@ export class Avatar implements DateAtPlugin, IsDeletedPlugin {
   isDeleted: boolean;
 }
 
-export interface AvatarDoc extends Avatar, Omit<Document, 'id'> {}
-
 export function getAvatarSchema(): mongooseSchema<Avatar> {
   const avatarSchema = SchemaFactory.createForClass(Avatar);
 
+  // Misc
   avatarSchema.plugin(dateAtPlugin);
   avatarSchema.plugin(isDeletedPlugin);
+
+  // Query
+  avatarSchema.plugin(avatarQuery);
 
   avatarSchema.index({ isDeleted: 1 });
 
@@ -71,18 +74,4 @@ export function getAvatarSchema(): mongooseSchema<Avatar> {
     },
   );
   return avatarSchema;
-}
-
-export function queryAvatarById(
-  id: string,
-  isDeleted = false,
-): { _id: string; isDeleted: boolean } {
-  return { _id: id, isDeleted };
-}
-
-export function queryAvatarByUserId(
-  id: string,
-  isDeleted = false,
-): { user: string; isDeleted: boolean } {
-  return { user: id, isDeleted };
 }
