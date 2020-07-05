@@ -1,4 +1,4 @@
-import { Schema as mongooseSchema } from 'mongoose';
+import { Schema as mongooseSchema, Document } from 'mongoose';
 import { passwordPlugin } from '../../../plugins';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { userCollation } from '../user.schema';
@@ -31,11 +31,21 @@ export class Login implements PasswordPlugin {
   _originalPassword: string;
   _currentPassword: string;
   _newPassword: string;
-  authenticate?(password: string): boolean;
+}
+
+export interface LoginDocument
+  extends Login,
+    LoginMethod,
+    Omit<Document, 'id'> {}
+
+export interface LoginMethod {
+  authenticate(password: string): boolean;
 }
 
 export function getLoginSchema(): mongooseSchema<Login> {
   const loginSchema = SchemaFactory.createForClass(Login);
+
+  loginSchema.plugin(passwordPlugin);
 
   loginSchema.index(
     { username: 1 },
@@ -48,14 +58,5 @@ export function getLoginSchema(): mongooseSchema<Login> {
     },
   );
 
-  loginSchema.plugin(passwordPlugin);
-
   return loginSchema;
-}
-
-export function queryLoginByUsername(
-  username: string,
-  isDeleted = false,
-): { 'login.username': { $eq: string; $exists: boolean }; isDeleted: boolean } {
-  return { 'login.username': { $eq: username, $exists: true }, isDeleted };
 }

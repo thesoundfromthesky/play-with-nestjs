@@ -1,3 +1,24 @@
+## Environment
+GOOGLE_CLIENT_ID
+
+GOOGLE_CLIENT_SECRET
+
+PORT=8000
+
+BASE_URL=http://localhost:${PORT}
+
+REDIRECT=http://localhost:4200
+
+MONGO_URI
+
+JWT_SECRET=strong password
+
+JWT_EXPIRES_IN_ACCESS_TOKEN=1d
+
+JWT_EXPIRES_IN_REFRESH_TOKEN=30d
+
+REDIS_URL=redis://localhost:6379/0
+
 <p align="center">
   <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo_text.svg" width="320" alt="Nest Logo" /></a>
 </p>

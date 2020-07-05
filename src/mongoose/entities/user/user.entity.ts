@@ -1,4 +1,9 @@
-import { User, Name, Email, Login } from '../../schemas';
+import {
+  User,
+  LoginDocument,
+  EmailDocument,
+  NameDocument,
+} from '../../schemas';
 import { Exclude, Expose, Type } from 'class-transformer';
 import { Role } from '../../enums';
 import { NameEntity, EmailEntity, LoginEntity } from './sub-entities';
@@ -8,20 +13,24 @@ export class UserEntity implements User {
   constructor(partial: Partial<UserEntity>) {
     Object.assign(this, partial);
   }
+
   @Type(() => NameEntity)
   @Expose()
-  readonly name: Name;
+  readonly name: NameDocument;
 
   @Type(() => EmailEntity)
   @Expose()
-  readonly emails: Email[];
+  readonly emails: EmailDocument[];
 
   @Expose()
   roles: Role[];
 
   @Type(() => LoginEntity)
   @Expose()
-  login:  Login;
+  login: LoginDocument;
+
+  @Expose()
+  avatar: string;
 
   @Expose()
   socialMediaHandles: Map<string, string>;

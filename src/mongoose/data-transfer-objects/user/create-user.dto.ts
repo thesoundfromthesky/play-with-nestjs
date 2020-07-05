@@ -4,7 +4,12 @@ import {
   ArrayNotEmpty,
 } from 'class-validator';
 
-import { User } from '../../schemas';
+import {
+  User,
+  LoginDocument,
+  EmailDocument,
+  NameDocument,
+} from '../../schemas';
 import { Role } from '../../enums';
 import { NameDto, EmailDto } from './sub-data-transfer-objects';
 import { Type, Transform } from 'class-transformer';
@@ -15,26 +20,26 @@ export class CreateUserDto implements User {
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => NameDto)
-  name: NameDto;
-
+  name: NameDocument;
 
   @Transform(selectFirst)
   @ArrayNotEmpty()
   @ValidateNested()
   @Type(() => EmailDto)
-  readonly emails: EmailDto[];
+  readonly emails: EmailDocument[];
 
   @IsNotEmptyObject()
   @ValidateNested()
   @Type(() => CreateLoginDto)
-  login: CreateLoginDto;
+  login: LoginDocument;
 
+  avatar: string;
   socialMediaHandles: Map<string, string>;
   roles: Role[];
   isDeleted: boolean;
 
   id: string;
-  
+
   createdAt: Date;
   updatedAt: Date;
 
